@@ -4,7 +4,7 @@ import joblib
 
 st.set_page_config(page_title="Stroke Prediction App")
 
-st.title("Stroke Prediction Web Application")
+st.title("Breast Cancer Prediction Web Application")
 
 uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
