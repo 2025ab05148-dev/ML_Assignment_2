@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import os
 
+# Page config
 st.set_page_config(page_title="Breast Cancer Prediction App")
 
 st.title("Breast Cancer Prediction Web Application")
@@ -26,18 +28,21 @@ if uploaded_file is not None:
     st.write("Uploaded Data:")
     st.dataframe(df.head())
 
-  import os
+    # Safe path handling for Streamlit Cloud
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    model_folder = os.path.join(BASE_DIR, "models")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    scaler_path = os.path.join(model_folder, "scaler.pkl")
+    model_path = os.path.join(model_folder, f"{model_choice}.pkl")
 
-scaler = joblib.load(os.path.join(BASE_DIR, "models", "scaler.pkl"))
-model = joblib.load(os.path.join(BASE_DIR, "models", f"{model_choice}.pkl"))
-
+    scaler = joblib.load(scaler_path)
+    model = joblib.load(model_path)
 
     X = scaler.transform(df)
     predictions = model.predict(X)
 
-    df["Stroke_Prediction"] = predictions
+    df["Prediction"] = predictions
 
     st.subheader("Prediction Results")
     st.dataframe(df)
+
