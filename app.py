@@ -30,7 +30,7 @@ if uploaded_file is not None:
 
     # Safe path handling for Streamlit Cloud
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    model_folder = os.path.join(BASE_DIR, "models")
+    model_folder = os.path.join(BASE_DIR, "model")
 
     scaler_path = os.path.join(model_folder, "scaler.pkl")
     model_path = os.path.join(model_folder, f"{model_choice}.pkl")
