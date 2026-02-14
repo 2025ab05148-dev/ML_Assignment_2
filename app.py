@@ -26,8 +26,13 @@ if uploaded_file is not None:
     st.write("Uploaded Data:")
     st.dataframe(df.head())
 
-    scaler = joblib.load("models/scaler.pkl")
-    model = joblib.load(f"models/{model_choice}.pkl")
+  import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+scaler = joblib.load(os.path.join(BASE_DIR, "models", "scaler.pkl"))
+model = joblib.load(os.path.join(BASE_DIR, "models", f"{model_choice}.pkl"))
+
 
     X = scaler.transform(df)
     predictions = model.predict(X)
