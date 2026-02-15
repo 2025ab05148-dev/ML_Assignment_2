@@ -7,13 +7,11 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 # Page config
-st.set_page_config(page_title="Breast Cancer Prediction App")
-st.title("Breast Cancer Prediction Web Application")
+st.set_page_config(page_title="Stroke Prediction App")
+st.title("Stroke Prediction Web Application")
 
-# File upload
 uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
-# Model selection
 models_choice = st.selectbox(
     "Select Model",
     [
@@ -33,26 +31,25 @@ if uploaded_file is not None:
     st.dataframe(df.head())
 
     # -------- Target Handling --------
-    if "target" in df.columns:
-        target_column = "target"
-
-    elif "diagnosis" in df.columns:
-        # Convert M/B to 1/0
-        df["target"] = df["diagnosis"].map({"M": 1, "B": 0})
-        target_column = "target"
-
-    else:
-        st.error("CSV must contain 'target' or 'diagnosis' column.")
+    if "stroke" not in df.columns:
+        st.error("CSV must contain 'stroke' column.")
         st.stop()
 
-    y_true = df[target_column]
+    y_true = df["stroke"]
+    X_input = df.drop("stroke", axis=1)
 
-    # Remove target & unwanted columns
-    X_input = df.drop([target_column], axis=1)
-
-    # Drop id column if exists
+    # Drop id column
     if "id" in X_input.columns:
         X_input = X_input.drop("id", axis=1)
+
+    # -------- Handle Categorical Columns --------
+    categorical_cols = ["gender", "ever_married", "work_type", "Residence_type"]
+
+    for col in categorical_cols:
+        if col in X_input.columns:
+            X_input[col] = X_input[col].astype(str)
+
+    X_input = pd.get_dummies(X_input)
 
     # -------- Model Loading --------
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -64,8 +61,10 @@ if uploaded_file is not None:
     scaler = joblib.load(scaler_path)
     model = joblib.load(model_path)
 
-    # -------- Prediction --------
+    # -------- Scaling --------
     X_scaled = scaler.transform(X_input)
+
+    # -------- Prediction --------
     predictions = model.predict(X_scaled)
 
     df["Prediction"] = predictions
