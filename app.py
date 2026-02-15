@@ -2,83 +2,82 @@ import streamlit as st
 import pandas as pd
 import joblib
 import os
-
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
-# ---------------- Page Config ----------------
+# Page config
 st.set_page_config(page_title="Breast Cancer Prediction App")
-
 st.title("Breast Cancer Prediction Web Application")
 
-# ---------------- File Upload ----------------
-uploaded_file = st.file_uploader("Upload CSV File (Test Data Only)", type=["csv"])
+# File upload
+uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
-# ---------------- Model Selection ----------------
-model_choice = st.selectbox(
+# Model selection
+models_choice = st.selectbox(
     "Select Model",
     [
-        "Logistic_Regression",
-        "Decision_Tree",
-        "KNN",
-        "Naive_Bayes",
-        "Random_Forest",
-        "XGBoost"
+        "logistic",
+        "decision_tree",
+        "knn",
+        "naive_bayes",
+        "random_forest",
+        "xgboost"
     ]
 )
 
 if uploaded_file is not None:
-    # Read CSV
-    df = pd.read_csv(uploaded_file)
 
-    st.subheader("Uploaded Data Preview")
+    df = pd.read_csv(uploaded_file)
+    st.write("Uploaded Data Preview:")
     st.dataframe(df.head())
 
-    # ---------------- Path Handling (Streamlit Cloud Safe) ----------------
+    # Check target column
+    if "target" not in df.columns:
+        st.error("CSV must contain 'target' column for evaluation.")
+        st.stop()
+
+    y_true = df["target"]
+    X_input = df.drop("target", axis=1)
+
+    # Safe path handling
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     models_folder = os.path.join(BASE_DIR, "models")
 
     scaler_path = os.path.join(models_folder, "scaler.pkl")
-    model_path = os.path.join(models_folder, f"{model_choice}.pkl")
+    model_path = os.path.join(models_folder, f"{models_choice}.pkl")
 
-    # Load scaler and model
+    # Load model and scaler
     scaler = joblib.load(scaler_path)
     model = joblib.load(model_path)
 
-    # ---------------- Check target column ----------------
-    if "target" not in df.columns:
-        st.error("❌ Uploaded CSV must contain a 'target' column for evaluation.")
-        st.stop()
+    # Scale features
+    X_scaled = scaler.transform(X_input)
 
-    # Separate features & target
-    X = df.drop("target", axis=1)
-    y_true = df["target"]
+    # Prediction
+    predictions = model.predict(X_scaled)
 
-    # ---------------- Scaling & Prediction ----------------
-    X_scaled = scaler.transform(X)
-    y_pred = model.predict(X_scaled)
-
-    # Add predictions to dataframe
-    df["Prediction"] = y_pred
+    df["Prediction"] = predictions
 
     st.subheader("Prediction Results")
     st.dataframe(df.head())
 
-    # ---------------- Evaluation Metrics ----------------
-    st.subheader("Evaluation Metrics")
+    # -------- Evaluation Metrics --------
+    accuracy = accuracy_score(y_true, predictions)
 
-    accuracy = accuracy_score(y_true, y_pred)
-    st.write("✅ Accuracy :", round(accuracy, 4))
+    st.subheader("Evaluation Metrics")
+    st.write("Accuracy:", round(accuracy, 4))
 
     st.subheader("Classification Report")
-    st.text(classification_report(y_true, y_pred))
+    st.text(classification_report(y_true, predictions))
 
-    # ---------------- Confusion Matrix ----------------
+    # -------- Confusion Matrix --------
+    cm = confusion_matrix(y_true, predictions)
+
     st.subheader("Confusion Matrix")
 
-    cm = confusion_matrix(y_true, y_pred)
-
     fig, ax = plt.subplots()
-
-
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    st.pyplot(fig)
