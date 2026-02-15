@@ -229,7 +229,7 @@ An interactive Streamlit web application was developed with the following featur
 
 
 
-Live App Link: (Add your Streamlit deployment link here)
+Live App Link: https://mlassignment2-p4g822a75g523mtj2xjnnh.streamlit.app/
 
 
 
