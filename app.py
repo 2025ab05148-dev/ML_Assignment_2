@@ -11,10 +11,8 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 st.set_page_config(page_title="Stroke Prediction App")
 st.title("Stroke Prediction Web Application")
 
-# File upload
 uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
-# IMPORTANT: Model names must match GitHub exactly
 models_choice = st.selectbox(
     "Select Model",
     [
@@ -33,19 +31,16 @@ if uploaded_file is not None:
     st.write("Uploaded Data Preview:")
     st.dataframe(df.head())
 
-    # Check stroke column
     if "stroke" not in df.columns:
         st.error("CSV must contain 'stroke' column.")
         st.stop()
 
-    # Drop ID if exists
     if "id" in df.columns:
         df = df.drop("id", axis=1)
 
-    # Fill missing BMI
     df["bmi"] = df["bmi"].fillna(df["bmi"].mean())
 
-    # Encode categorical columns (same as training)
+    # Encode categorical columns
     for col in df.select_dtypes(include="object").columns:
         le = LabelEncoder()
         df[col] = le.fit_transform(df[col])
@@ -60,10 +55,15 @@ if uploaded_file is not None:
     scaler = joblib.load(os.path.join(models_folder, "scaler.pkl"))
     model = joblib.load(os.path.join(models_folder, f"{models_choice}.pkl"))
 
-    # Scale features
+    # 🔥 Load correct feature order
+    feature_columns = joblib.load(os.path.join(models_folder, "feature_columns.pkl"))
+
+    # Reorder columns to match training
+    X_input = X_input[feature_columns]
+
+    # Scale
     X_scaled = scaler.transform(X_input)
 
-    # Predict
     predictions = model.predict(X_scaled)
 
     df["Prediction"] = predictions
@@ -71,7 +71,6 @@ if uploaded_file is not None:
     st.subheader("Prediction Results")
     st.dataframe(df.head())
 
-    # Evaluation metrics
     accuracy = accuracy_score(y_true, predictions)
 
     st.subheader("Evaluation Metrics")
@@ -80,7 +79,6 @@ if uploaded_file is not None:
     st.subheader("Classification Report")
     st.text(classification_report(y_true, predictions))
 
-    # Confusion matrix
     cm = confusion_matrix(y_true, predictions)
 
     st.subheader("Confusion Matrix")
