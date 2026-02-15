@@ -69,6 +69,21 @@ Features include:
 \- Addressed class imbalance using upsampling of minority class  
 
 
+\###Dataset Source
+
+The dataset was obtained from Kaggle:
+
+https://www.kaggle.com/fedesoriano/stroke-prediction-dataset
+
+Note:
+Due to submission size constraints, the full dataset is not included in this repository.
+The dataset can be downloaded directly from the Kaggle link above.
+
+Reproducibility
+
+All preprocessing steps and model training procedures are clearly defined in train.py.
+
+
 
 ---
 
@@ -226,7 +241,7 @@ Live App Link: (Add your Streamlit deployment link here)
 
 
 
-GitHub Repository Link: (Add your GitHub repository link here)
+GitHub Repository Link: https://github.com/2025ab05148-dev/ML_Assignment_2
 
 
 
@@ -234,7 +249,7 @@ GitHub Repository Link: (Add your GitHub repository link here)
 
 
 
-**## 9. Conclusion**
+**## . Conclusion**
 
 
 
