@@ -32,29 +32,40 @@ if uploaded_file is not None:
     st.write("Uploaded Data Preview:")
     st.dataframe(df.head())
 
-    # Check target column
-    if "target" not in df.columns:
-        st.error("CSV must contain 'target' column for evaluation.")
+    # -------- Target Handling --------
+    if "target" in df.columns:
+        target_column = "target"
+
+    elif "diagnosis" in df.columns:
+        # Convert M/B to 1/0
+        df["target"] = df["diagnosis"].map({"M": 1, "B": 0})
+        target_column = "target"
+
+    else:
+        st.error("CSV must contain 'target' or 'diagnosis' column.")
         st.stop()
 
-    y_true = df["target"]
-    X_input = df.drop("target", axis=1)
+    y_true = df[target_column]
 
-    # Safe path handling
+    # Remove target & unwanted columns
+    X_input = df.drop([target_column], axis=1)
+
+    # Drop id column if exists
+    if "id" in X_input.columns:
+        X_input = X_input.drop("id", axis=1)
+
+    # -------- Model Loading --------
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     models_folder = os.path.join(BASE_DIR, "models")
 
     scaler_path = os.path.join(models_folder, "scaler.pkl")
     model_path = os.path.join(models_folder, f"{models_choice}.pkl")
 
-    # Load model and scaler
     scaler = joblib.load(scaler_path)
     model = joblib.load(model_path)
 
-    # Scale features
+    # -------- Prediction --------
     X_scaled = scaler.transform(X_input)
-
-    # Prediction
     predictions = model.predict(X_scaled)
 
     df["Prediction"] = predictions
